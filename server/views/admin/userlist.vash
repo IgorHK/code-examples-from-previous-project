@@ -1,0 +1,59 @@
+@html.extend('./admin/z_layout', function(model){
+
+
+    if (!model.js) {
+        model.js=[];
+    }
+
+    model.js.push("/javascripts/admin/user.js");
+
+    if (!model.pageFeatues) {
+        model.pageFeatures = [];
+    }
+
+    model.pageFeatures.push("datatable","bootbox");
+
+
+    @html.block('content', function(model){
+        <div class="row row-offcanvas row-offcanvas-right">
+
+            <h1>
+                @if (model.user.userType=="SYSADMIN") {
+                    @model.__("Users")
+                } else {
+                    @model.__("Administrators")
+                }
+            </h1>
+
+            <nav class="navbar navbar-default pagetoolbar">
+                <div class="pull-right">
+                    <a href="/admin/users/create" id="create_btn" class="btn btn-default navbar-btn">@model.__("Create User")</a>
+
+                    <button type="button" id="edit_btn" class="disabled btn btn-default navbar-btn">
+                        @model.__("Edit User")
+                    </button>
+
+                    <button type="button" id="delete_btn" data-form-action="/admin/users/delete" class="disabled btn btn-default navbar-btn">@model.__("Delete User")</button>
+                </div>
+            </nav>
+
+            <table id="table_id" class="display responsive no-wrap" width="100%">
+                <thead>
+                <tr>
+                    <th>@model.__("Name")</th>
+                    @if (model.user.userType=="SYSADMIN") {
+                        <th>@model.__("Role")/@model.__("Customer")</a></th>
+                    }
+                    <th>@model.__("Email")</th>
+                    <th>@model.__("Is Active")</th>
+                    <th>@model.__("Created")</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    })
+})
