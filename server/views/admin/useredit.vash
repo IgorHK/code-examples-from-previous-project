@@ -1,0 +1,183 @@
+@html.extend('./admin/z_layout', function(model){
+
+    if (!model.js) {
+        model.js=[];
+    }
+
+    model.js.push("/javascripts/admin/user.js");
+
+    if (!model.pageFeatues) {
+        model.pageFeatures = [];
+    }
+
+    model.pageFeatures.push("datatable", "bootbox", "adminform", "typeahead");
+
+
+    @html.block('content', function(model){
+        <div class="row row-offcanvas row-offcanvas-right">
+
+            <h1>
+                <a href="/admin/users">
+                @if (model.user.userType=="SYSADMIN") {
+                   @model.__("Users")
+                } else {
+                    @model.__("Administrators")
+                }
+                </a>:
+                @if (model.formData.isNew) {
+                    @model.__("Create user")
+                } else {
+                    @model.__("Edit user")
+                }
+            </h1>
+
+
+
+            <form method="post" id="useredtfrm">
+
+
+                @html.hiddenField("_id", model.formData, model.formPaths)
+
+                @html.include('./admin/useredit_toolbar', model)
+
+                <div class="alert alert-danger hidden"></div>
+
+                <h2>
+                    @model.__("User Information")
+                </h2>
+
+                <div class="col-sm-5">
+                    @html.textField("userName.firstName", @model.__("First Name"), @model.__('Enter first name'), model.formData, model.formPaths)
+                </div>
+
+                <div class="col-sm-2">
+                    @html.textField("userName.middleName", @model.__("Middle Name"), @model.__('Enter middle name'), model.formData, model.formPaths)
+                </div>
+
+                <div class="col-sm-5">
+                    @html.textField("userName.lastName", @model.__("Last Name"), @model.__('Enter last name'), model.formData, model.formPaths)
+                </div>
+
+
+                <div class="col-sm-6">
+                    @html.textField("contactEmail", @model.__("E-mail address"), @model.__('Enter e-mail'), model.formData, model.formPaths, "email")
+                </div>
+
+                <div class="col-sm-6">
+                    @html.textField("contactPhone", @model.__("Phone"), @model.__('Enter phone'), model.formData, model.formPaths, "phone")
+                </div>
+
+                @{
+                    var confirmPasswordClass = "hidden";
+                    var passwordLabel = model.__("Enter new password (if password change required)");
+                    if (model.formData.isNew) {
+                        confirmPasswordClass = "";
+                        passwordLabel = model.__("Enter password");
+                    }
+                }
+
+                <div class="row row-nomargin">
+                    <div class="col-sm-6">
+                        @html.textFieldEx("password", @passwordLabel, @model.__('Change Password'), "password", "", "password")
+                    </div>
+                </div>
+
+                <div class="row row-nomargin">
+
+                    <div class="col-sm-6 @confirmPasswordClass" >
+                        @html.textFieldEx("confirmpassword", @model.__("Confirm Password"), @model.__('Confirm Password'), "confirmpassword", "", "password")
+                    </div>
+
+                </div>
+
+                <h2>
+                    @model.__("User Role")
+                </h2>
+
+                <div class="row row-nomargin">
+                                     <div class="col-sm-2">
+                                         @if (model.user.userType == "SYSADMIN") {
+                                                      @if (model.formData.userType == "SYSADMIN"){
+                                                                    <select class="form-control">
+                                                                    <option selected value="SYSADMIN">SYSADMIN</option>
+                                                        @if (model.activeCustomers == true && model.formData.isActive == true)
+                                                         {@html.raw("<option value=ADMIN>ADMIN</option>")}
+                                                                    <option value="USER">USER</option>
+                                                                    </select>
+                                                      }
+                                                      @if (model.formData.userType == "ADMIN"){
+                                                                     <select class="form-control">
+                                                        @if (model.activeCustomers == true && model.formData.isActive == true)
+                                                         {@html.raw("<option selected value=ADMIN>ADMIN</option>")}
+                                                                     <option value="SYSADMIN">SYSADMIN</option>
+                                                                     <option value="USER">USER</option>
+                                                                     </select>
+                                                      }
+                                                      @if (model.formData.userType == "USER"){
+                                                                     <select class="form-control">
+                                                                     <option selected value="USER">USER</option>
+                                                                     <option value="SYSADMIN">SYSADMIN</option>
+                                                        @if (model.activeCustomers == true && model.formData.isActive == true)
+                                                         {@html.raw("<option value=ADMIN>ADMIN</option>")}
+                                                                    </select>
+                                                      }
+                                         }
+                                         @if (model.user.userType=="ADMIN") {
+                                                      @if (model.formData.userType == "ADMIN"){
+                                                                     <select class="form-control">
+                                                        @if (model.activeCustomers == true && model.formData.isActive == true)
+                                                         {@html.raw("<option selected value=ADMIN>ADMIN</option>")}
+                                                                     <option value="USER">USER</option>
+                                                                     </select>
+                                                      }
+                                                      @if (model.formData.userType == "USER"){
+                                                                     <select class="form-control">
+                                                                     <option selected value="USER">USER</option>
+                                                        @if (model.activeCustomers == true && model.formData.isActive == true)
+                                                         {@html.raw("<option value=ADMIN>ADMIN</option>")}
+                                                                     </select>
+                                                      }
+                                         }
+                                     </div>
+                                     <input type="hidden" id="userTypeSelected" name="userType" value=@model.formData.userType></input>
+                </div>
+
+                <div id = "linkedAccounts" class = @if (model.formData.userType != "ADMIN" &&model.formData.isActive == true){@html.raw("hidden")}>
+
+                      <h2>
+                         @model.__("Linked Accounts")
+                      </h2>
+                   <div class="row row-nomargin">
+                                      <div class="row">
+                                         <div class="col-sm-5">
+                                            <div class="form-group has-success has-feedback">
+                                              <input data-typeahead-type="choosecustomer" placeholder="@model.__('Customer to administer')" autocomplete="off" class='form-control' type="text" value=""/>
+                                              <span class="glyphicon glyphicon-search form-control-feedback" aria-hidden="true"></span>
+                                            </div>
+                                         </div>
+                                      </div>
+                                      <div class="row">
+                                         <div class="col-sm-5">
+                                           <div class="form-group">
+                                              @if (model.adminCustomers!=null){
+                                                <ul class="list-style" id="adminCustomers">
+                                                    @model.adminCustomers.forEach(function(adminCustomers){
+                                                       <li>
+                                                         <div>@adminCustomers.name</div>
+                                                         <input type="hidden" id="customer_@adminCustomers._id" name="adminCustomerIds" value="@adminCustomers._id"></input>
+                                                         <button name="deleteCustomer" class="btn btn-warning btn-xs">Delete</button>
+                                                       </li>
+                                                    })
+                                                </ul>
+                                              }
+                                           </div>
+                                         </div>
+                                      </div>
+                   </div>
+
+                </div>
+                @html.include('./admin/useredit_toolbar', model)
+            </form>
+        </div>
+    })
+})
